@@ -129,7 +129,8 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                 FT_GlyphSlot slot = face->glyph;
                 FT_Outline& outline = slot->outline;
                 if (slot->format != FT_GLYPH_FORMAT_OUTLINE) {
-                    std::cout << "wtf" << std::endl;
+                    std::cerr << "[ftdcmp] not able able to process glyph format for symbol: " << symbol << std::endl;
+                    return path_type();
                 }
 
                 PathInfo result;
@@ -143,6 +144,9 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
 
                 return result.m_path;
             };
+        }
+        else {
+            std::cerr << "[ftdcmp] failed to load font. error: " << error << " path: " << font_file << std::endl;
         }
     }
     return [](auto symbol) {
