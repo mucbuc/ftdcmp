@@ -125,16 +125,31 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                 const int glyph_index = FT_Get_Char_Index(face, symbol);
 
                 FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
+                if (error) {
+                    std::cerr << "[ftdcmp] failed to load glyph for symbol: " << symbol << " error:" << error << std::endl;
+                    return path_type();
+                }
 
                 FT_GlyphSlot slot = face->glyph;
                 FT_Outline& outline = slot->outline;
+
                 if (slot->format != FT_GLYPH_FORMAT_OUTLINE) {
                     std::cerr << "[ftdcmp] not able able to process glyph format for symbol: " << symbol << std::endl;
                     return path_type();
                 }
 
-                PathInfo result;
+                error = FT_Outline_Check(&outline);
+                if (error) {
+                    std::cerr << "[ftdcmp] failed to process glyph for symbol: " << symbol << " error: " << error << std::endl;
+                    return path_type();
+                }
 
+                if (outline.n_contours <= 0 || outline.n_points <= 0) {
+                    std::cerr << "[ftdcmp] glyph missing path data for symbol: " << symbol << std::endl;
+                    return path_type();
+                }
+
+                PathInfo result;
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 if (result.m_current) {
@@ -144,8 +159,7 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
 
                 return result.m_path;
             };
-        }
-        else {
+        } else {
             std::cerr << "[ftdcmp] failed to load font. error: " << error << " path: " << font_file << std::endl;
         }
     }

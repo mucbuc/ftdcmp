@@ -14,3 +14,4 @@ build/
 xc-build/
 xcbuild/
 web-build/
+.DS_Store
