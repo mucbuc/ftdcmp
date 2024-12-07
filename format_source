@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+clang-format -i --style=Webkit *.{hpp,cpp}
+clang-format -i --style=Webkit test/src/example.cpp
