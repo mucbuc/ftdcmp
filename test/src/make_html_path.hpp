@@ -72,9 +72,9 @@ template <typename T>
 std::string make_html_path(const path_comp::Comp<T> & builder, std::string name)
 {
     std::stringstream result;
-    for (auto loop : builder.loops())
+    for (auto loop_index = 0; loop_index < builder.loops().size(); ++loop_index)
     {
-        result << make_html_path(loop, name);
+        result << make_html_path(builder.loops()[loop_index], name + std::to_string(loop_index));
     }
     
     return result.str();
