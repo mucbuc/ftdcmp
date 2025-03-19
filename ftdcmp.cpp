@@ -27,8 +27,8 @@ static struct
 struct PathInfo {
     PathInfo() = default;
 
-    std::shared_ptr<ftdcmp::path_type::Loop> m_current;
-    ftdcmp::path_type m_path;
+    std::shared_ptr<ftdcmp::loop_type> m_current;
+    ftdcmp::path_type m_path = {{1, 1}};
 };
 
 using vector_type = std::array<long, 2>;
@@ -40,10 +40,10 @@ moveTo(const FT_Vector* to,
     PathInfo* path = reinterpret_cast<PathInfo*>(user);
 
     if (path->m_current) {
-        path->m_path.append(*path->m_current);
+        path->m_path.insert(*path->m_current);
     }
 
-    path->m_current = std::make_shared<ftdcmp::path_type::Loop>(vector_type { { to->x, to->y } }.data());
+    path->m_current = std::make_shared<ftdcmp::loop_type>(vector_type { { to->x, to->y } });
     return 0;
 }
 
@@ -54,7 +54,7 @@ lineTo(const FT_Vector* to,
     PathInfo* path = reinterpret_cast<PathInfo*>(user);
     ASSERT(path->m_current);
 
-    path->m_current->line(vector_type { { to->x, to->y } }.data());
+    path->m_current->line(vector_type { { to->x, to->y } });
     return 0;
 }
 
@@ -65,7 +65,7 @@ conicTo(const FT_Vector* control,
 {
     PathInfo* path = reinterpret_cast<PathInfo*>(user);
     ASSERT(path->m_current);
-    path->m_current->curve(vector_type { { control->x, control->y } }.data(), vector_type { { to->x, to->y } }.data());
+    path->m_current->curve(vector_type { { control->x, control->y } }, vector_type { { to->x, to->y } });
     return 0;
 }
 
@@ -77,7 +77,7 @@ cubicTo(const FT_Vector* control1,
 {
     PathInfo* path = reinterpret_cast<PathInfo*>(user);
     ASSERT(path->m_current);
-    path->m_current->curve(vector_type { { control1->x, control1->y } }.data(), vector_type { { control2->x, control2->y } }.data(), vector_type { { to->x, to->y } }.data());
+    path->m_current->curve(vector_type { { control1->x, control1->y } }, vector_type { { control2->x, control2->y } }, vector_type { { to->x, to->y } });
     return 0;
 }
 
@@ -153,7 +153,7 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 if (result.m_current) {
-                    result.m_path.append(*result.m_current);
+                    result.m_path.insert(*result.m_current);
                     result.m_current.reset();
                 }
 
