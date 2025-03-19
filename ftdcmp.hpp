@@ -1,10 +1,10 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <sstream>
 #include <string>
-#include <array>
 
 #include <cassert>
 #define ASSERT(p) assert((p))

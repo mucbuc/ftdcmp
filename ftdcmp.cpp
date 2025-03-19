@@ -28,7 +28,7 @@ struct PathInfo {
     PathInfo() = default;
 
     std::shared_ptr<ftdcmp::loop_type> m_current;
-    ftdcmp::path_type m_path = {{1, 1}};
+    ftdcmp::path_type m_path = { { 1, 1 } };
 };
 
 using vector_type = std::array<long, 2>;
