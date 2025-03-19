@@ -25,10 +25,13 @@ static struct
 } gStates;
 
 struct PathInfo {
-    PathInfo() = default;
+    PathInfo(ftdcmp::vector_type size)
+    : m_current()
+    , m_path(size)
+    {}
 
     std::shared_ptr<ftdcmp::loop_type> m_current;
-    ftdcmp::path_type m_path = { { 1, 1 } };
+    ftdcmp::path_type m_path;
 };
 
 using vector_type = std::array<long, 2>;
@@ -131,6 +134,7 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                 }
 
                 FT_GlyphSlot slot = face->glyph;
+
                 FT_Outline& outline = slot->outline;
 
                 if (slot->format != FT_GLYPH_FORMAT_OUTLINE) {
@@ -149,7 +153,7 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                     return path_type();
                 }
 
-                PathInfo result;
+                PathInfo result{ vector_type{{slot->advance.x, slot->advance.y}} };
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 if (result.m_current) {
