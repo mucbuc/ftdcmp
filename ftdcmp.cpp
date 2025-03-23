@@ -24,19 +24,20 @@ static struct
 
 } gStates;
 
-template<typename T> 
+template <typename T>
 struct PathInfo {
 
     using vector_type = std::array<T, 2>;
-    using loop_type = path_comp::Loop< vector_type >;
+    using loop_type = path_comp::Loop<vector_type>;
 
-    PathInfo(const T & w, const T & h)
-    : m_current()
-    , m_path(vector_type{w, h})
-    {}
+    PathInfo(const T& w, const T& h)
+        : m_current()
+        , m_path(vector_type { w, h })
+    {
+    }
 
-    std::shared_ptr< loop_type > m_current;
-    path_comp::Comp< loop_type > m_path;
+    std::shared_ptr<loop_type> m_current;
+    path_comp::Comp<loop_type> m_path;
 
     static int
     moveTo(const FT_Vector* to,
@@ -110,7 +111,7 @@ void release()
     }
 }
 
-template<typename T>
+template <typename T>
 std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file, unsigned font_index)
 {
     if (gStates.m_initialized) {
@@ -157,7 +158,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                     0 // no delta
                 };
 
-                PathInfo<T> result {T(slot->advance.x), T(slot->advance.y)};
+                PathInfo<T> result { T(slot->advance.x), T(slot->advance.y) };
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 if (result.m_current) {
@@ -178,12 +179,12 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
 
 std::function<path_type<long>(unsigned long)> make_decomposer_l(std::string font_file, unsigned font_index)
 {
-    return make_decomposer<long>(font_file, font_index); 
+    return make_decomposer<long>(font_file, font_index);
 }
 
 std::function<path_type<float>(unsigned long)> make_decomposer_f(std::string font_file, unsigned font_index)
 {
-    return make_decomposer<float>(font_file, font_index); 
+    return make_decomposer<float>(font_file, font_index);
 }
 
 } // ftdcmp
