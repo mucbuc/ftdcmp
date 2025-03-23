@@ -24,73 +24,67 @@ static struct
 
 } gStates;
 
+template<typename T> 
 struct PathInfo {
+
+    using vector_type = std::array<T, 2>;
+    using loop_type = path_comp::Loop< vector_type >;
+
     PathInfo(ftdcmp::vector_type size)
     : m_current()
     , m_path(size)
     {}
 
-    std::shared_ptr<ftdcmp::loop_type> m_current;
-    ftdcmp::path_type m_path;
-};
+    std::shared_ptr< loop_type > m_current;
+    path_comp::Comp< loop_type > m_path;
 
-using vector_type = std::array<long, 2>;
+    static int
+    moveTo(const FT_Vector* to,
+        void* user)
+    {
+        PathInfo* path = reinterpret_cast<PathInfo*>(user);
 
-static int
-moveTo(const FT_Vector* to,
-    void* user)
-{
-    PathInfo* path = reinterpret_cast<PathInfo*>(user);
+        if (path->m_current) {
+            path->m_path.insert(*path->m_current);
+        }
 
-    if (path->m_current) {
-        path->m_path.insert(*path->m_current);
+        path->m_current = std::make_shared<loop_type>(vector_type { { T{to->x}, T{to->y} } });
+        return 0;
     }
 
-    path->m_current = std::make_shared<ftdcmp::loop_type>(vector_type { { to->x, to->y } });
-    return 0;
-}
+    static int
+    lineTo(const FT_Vector* to,
+        void* user)
+    {
+        PathInfo* path = reinterpret_cast<PathInfo*>(user);
+        ASSERT(path->m_current);
 
-static int
-lineTo(const FT_Vector* to,
-    void* user)
-{
-    PathInfo* path = reinterpret_cast<PathInfo*>(user);
-    ASSERT(path->m_current);
+        path->m_current->line(vector_type { { T{to->x}, T{to->y} } });
+        return 0;
+    }
 
-    path->m_current->line(vector_type { { to->x, to->y } });
-    return 0;
-}
+    static int
+    conicTo(const FT_Vector* control,
+        const FT_Vector* to,
+        void* user)
+    {
+        PathInfo* path = reinterpret_cast<PathInfo*>(user);
+        ASSERT(path->m_current);
+        path->m_current->curve(vector_type { { T{control->x}, T{control->y} } }, vector_type { { T{to->x}, T{to->y} } });
+        return 0;
+    }
 
-static int
-conicTo(const FT_Vector* control,
-    const FT_Vector* to,
-    void* user)
-{
-    PathInfo* path = reinterpret_cast<PathInfo*>(user);
-    ASSERT(path->m_current);
-    path->m_current->curve(vector_type { { control->x, control->y } }, vector_type { { to->x, to->y } });
-    return 0;
-}
-
-static int
-cubicTo(const FT_Vector* control1,
-    const FT_Vector* control2,
-    const FT_Vector* to,
-    void* user)
-{
-    PathInfo* path = reinterpret_cast<PathInfo*>(user);
-    ASSERT(path->m_current);
-    path->m_current->curve(vector_type { { control1->x, control1->y } }, vector_type { { control2->x, control2->y } }, vector_type { { to->x, to->y } });
-    return 0;
-}
-
-static FT_Outline_Funcs outlineFuncs = {
-    moveTo,
-    lineTo,
-    conicTo,
-    cubicTo,
-    0, // no shift
-    0 // no delta
+    static int
+    cubicTo(const FT_Vector* control1,
+        const FT_Vector* control2,
+        const FT_Vector* to,
+        void* user)
+    {
+        PathInfo* path = reinterpret_cast<PathInfo*>(user);
+        ASSERT(path->m_current);
+        path->m_current->curve(vector_type { { T{control1->x, control1->y} } }, vector_type { { T{control2->x}, T{control2->y} } }, vector_type { { T{to->x}, T{to->y} } });
+        return 0;
+    }
 };
 
 }
@@ -116,7 +110,8 @@ void release()
     }
 }
 
-std::function<path_type(unsigned long)> make_decomposer(std::string font_file, unsigned font_index)
+template<typename T>
+std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file, unsigned font_index)
 {
     if (gStates.m_initialized) {
         FT_Face face;
@@ -139,7 +134,7 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
 
                 if (slot->format != FT_GLYPH_FORMAT_OUTLINE) {
                     std::cerr << "[ftdcmp] not able able to process glyph format for symbol: " << symbol << std::endl;
-                    return path_type();
+                    return path_type<T>();
                 }
 
                 error = FT_Outline_Check(&outline);
@@ -150,10 +145,19 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
 
                 if (outline.n_contours <= 0 || outline.n_points <= 0) {
                     std::cerr << "[ftdcmp] glyph missing path data for symbol: " << symbol << std::endl;
-                    return path_type();
+                    return path_type<T>();
                 }
 
-                PathInfo result{ vector_type{{slot->advance.x, slot->advance.y}} };
+                FT_Outline_Funcs outlineFuncs = {
+                    moveTo<T>,
+                    lineTo<T>,
+                    conicTo<T>,
+                    cubicTo<T>,
+                    0, // no shift
+                    0 // no delta
+                };
+
+                PathInfo result{{ T{slot->advance.x}, T{slot->advance.y}} };
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 if (result.m_current) {
@@ -168,7 +172,7 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
         }
     }
     return [](auto symbol) {
-        return path_type();
+        return path_type<T>();
     };
 };
 
