@@ -25,6 +25,9 @@ static struct
 } gStates;
 
 template <typename T>
+using path_type = ftdcmp::path_type<T>;
+
+template <typename T>
 struct PathInfo {
 
     using vector_type = std::array<T, 2>;
@@ -87,29 +90,6 @@ struct PathInfo {
         return 0;
     }
 };
-
-}
-
-namespace ftdcmp {
-void init()
-{
-    if (!gStates.m_initialized) {
-        if (const auto error = gStates.init_lib()) {
-            std::cout << "freetype init failed with error " << error << std::endl;
-        } else {
-            gStates.m_initialized = true;
-        }
-    }
-}
-
-void release()
-{
-    if (gStates.m_initialized) {
-        gStates.m_initialized = false;
-
-        FT_Done_FreeType(gStates.m_library);
-    }
-}
 
 template <typename T>
 std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file, unsigned font_index)
@@ -176,6 +156,29 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
         return path_type<T>();
     };
 };
+
+}
+
+namespace ftdcmp {
+void init()
+{
+    if (!gStates.m_initialized) {
+        if (const auto error = gStates.init_lib()) {
+            std::cout << "freetype init failed with error " << error << std::endl;
+        } else {
+            gStates.m_initialized = true;
+        }
+    }
+}
+
+void release()
+{
+    if (gStates.m_initialized) {
+        gStates.m_initialized = false;
+
+        FT_Done_FreeType(gStates.m_library);
+    }
+}
 
 std::function<path_type<long>(unsigned long)> make_decomposer_l(std::string font_file, unsigned font_index)
 {
