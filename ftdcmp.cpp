@@ -30,9 +30,9 @@ struct PathInfo {
     using vector_type = std::array<T, 2>;
     using loop_type = path_comp::Loop< vector_type >;
 
-    PathInfo(ftdcmp::vector_type size)
+    PathInfo(const T & w, const T & h)
     : m_current()
-    , m_path(size)
+    , m_path(vector_type{w, h})
     {}
 
     std::shared_ptr< loop_type > m_current;
@@ -48,7 +48,7 @@ struct PathInfo {
             path->m_path.insert(*path->m_current);
         }
 
-        path->m_current = std::make_shared<loop_type>(vector_type { { T{to->x}, T{to->y} } });
+        path->m_current = std::make_shared<loop_type>(vector_type { { T(to->x), T(to->y) } });
         return 0;
     }
 
@@ -59,7 +59,7 @@ struct PathInfo {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
         ASSERT(path->m_current);
 
-        path->m_current->line(vector_type { { T{to->x}, T{to->y} } });
+        path->m_current->line(vector_type { { T(to->x), T(to->y) } });
         return 0;
     }
 
@@ -70,7 +70,7 @@ struct PathInfo {
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
         ASSERT(path->m_current);
-        path->m_current->curve(vector_type { { T{control->x}, T{control->y} } }, vector_type { { T{to->x}, T{to->y} } });
+        path->m_current->curve(vector_type { { T(control->x), T(control->y) } }, vector_type { { T(to->x), T(to->y) } });
         return 0;
     }
 
@@ -82,7 +82,7 @@ struct PathInfo {
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
         ASSERT(path->m_current);
-        path->m_current->curve(vector_type { { T{control1->x, control1->y} } }, vector_type { { T{control2->x}, T{control2->y} } }, vector_type { { T{to->x}, T{to->y} } });
+        path->m_current->curve(vector_type { { T(control1->x), T(control1->y) } }, vector_type { { T(control2->x), T(control2->y) } }, vector_type { { T(to->x), T(to->y) } });
         return 0;
     }
 };
@@ -125,7 +125,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                 FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
                 if (error) {
                     std::cerr << "[ftdcmp] failed to load glyph for symbol: " << symbol << " error:" << error << std::endl;
-                    return path_type();
+                    return path_type<T>();
                 }
 
                 FT_GlyphSlot slot = face->glyph;
@@ -140,7 +140,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                 error = FT_Outline_Check(&outline);
                 if (error) {
                     std::cerr << "[ftdcmp] failed to process glyph for symbol: " << symbol << " error: " << error << std::endl;
-                    return path_type();
+                    return path_type<T>();
                 }
 
                 if (outline.n_contours <= 0 || outline.n_points <= 0) {
@@ -149,15 +149,15 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                 }
 
                 FT_Outline_Funcs outlineFuncs = {
-                    moveTo<T>,
-                    lineTo<T>,
-                    conicTo<T>,
-                    cubicTo<T>,
+                    PathInfo<T>::moveTo,
+                    PathInfo<T>::lineTo,
+                    PathInfo<T>::conicTo,
+                    PathInfo<T>::cubicTo,
                     0, // no shift
                     0 // no delta
                 };
 
-                PathInfo result{{ T{slot->advance.x}, T{slot->advance.y}} };
+                PathInfo<T> result {T(slot->advance.x), T(slot->advance.y)};
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 if (result.m_current) {
@@ -175,5 +175,15 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
         return path_type<T>();
     };
 };
+
+std::function<path_type<long>(unsigned long)> make_decomposer_l(std::string font_file, unsigned font_index)
+{
+    return make_decomposer<long>(font_file, font_index); 
+}
+
+std::function<path_type<float>(unsigned long)> make_decomposer_f(std::string font_file, unsigned font_index)
+{
+    return make_decomposer<float>(font_file, font_index); 
+}
 
 } // ftdcmp
