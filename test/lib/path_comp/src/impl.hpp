@@ -70,6 +70,25 @@ auto Loop<Vector_t, Index_t>::segments() const -> std::vector<index_type>
     return m_segments;
 }
 
+template <typename Vector_t, typename Index_t>
+template <typename C>
+Loop<C, Index_t> Loop<Vector_t, Index_t>::convert_to() const
+{
+    Loop<C, Index_t> result;
+
+    result.m_points.reserve(m_points.size());
+    for (auto point : m_points) {
+        result.m_points.push_back(C { { point[0], point[1] } });
+    }
+
+    result.m_segments.reserve(m_segments.size());
+    for (auto segments : m_segments) {
+        result.m_segments.push_back(segments);
+    }
+
+    return result;
+}
+
 #pragma mark Comp
 
 template <typename Loop_t>
@@ -108,6 +127,18 @@ template <typename Loop_t>
 auto Comp<Loop_t>::loops() const -> std::vector<Loop_t>
 {
     return m_loops;
+}
+
+template <typename Loop_t>
+template <typename C>
+Comp<Loop<C>> Comp<Loop_t>::convert_to() const
+{
+    Comp<Loop<C>> result(C { { m_size[0], m_size[1] } });
+    result.m_loops.reserve(m_loops.size());
+    for (auto loop : m_loops) {
+        result.m_loops.push_back(loop.template convert_to<C>());
+    }
+    return result;
 }
 
 #pragma mark Bounds

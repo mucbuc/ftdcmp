@@ -1,4 +1,7 @@
 #include "ftdcmp.hpp"
+
+#include <asserter/src/asserter.hpp>
+
 #include <atomic>
 #include <iostream>
 
@@ -6,9 +9,6 @@
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
 #include FT_BBOX_H
-
-#define FOO \
-    std::cout << __PRETTY_FUNCTION__ << std::endl
 
 namespace {
 
@@ -61,7 +61,7 @@ struct PathInfo {
         void* user)
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
-        ASSERT(path->m_current);
+        ASSERT(path->m_current.get());
 
         path->m_current->line(vector_type { { T(to->x), T(to->y) } });
         return 0;
@@ -73,7 +73,7 @@ struct PathInfo {
         void* user)
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
-        ASSERT(path->m_current);
+        ASSERT(path->m_current.get());
         path->m_current->curve(vector_type { { T(control->x), T(control->y) } }, vector_type { { T(to->x), T(to->y) } });
         return 0;
     }
@@ -85,7 +85,7 @@ struct PathInfo {
         void* user)
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
-        ASSERT(path->m_current);
+        ASSERT(path->m_current.get());
         path->m_current->curve(vector_type { { T(control1->x), T(control1->y) } }, vector_type { { T(control2->x), T(control2->y) } }, vector_type { { T(to->x), T(to->y) } });
         return 0;
     }

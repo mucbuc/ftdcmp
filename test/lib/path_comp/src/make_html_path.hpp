@@ -1,10 +1,6 @@
 
 #pragma once
 
-#include <iostream>
-#include <asserter/src/asserter.hpp>
-
-
 template <class T>
 static std::ostream& write_vector(T p, std::ostream& o)
 {

@@ -1,7 +1,7 @@
 #include <ftdcmp/ftdcmp.hpp>
 #include <iostream>
 
-#include "make_html_path.hpp"
+#include <asserter/src/asserter.hpp>
 
 int main()
 {
@@ -13,8 +13,8 @@ int main()
     auto dcmp = ftdcmp::make_decomposer_l("/Library/Fonts/Arial Unicode.ttf");
 #endif
 
-    std::cout << make_html_path(dcmp('a'), "container") << std::endl;
-    std::cout << make_html_path(dcmp('B'), "container2") << std::endl;
+    std::cout << path_comp::make_html_path(dcmp('a'), "container") << std::endl;
+    std::cout << path_comp::make_html_path(dcmp('B'), "container2") << std::endl;
     ftdcmp::release();
 
     return 0;

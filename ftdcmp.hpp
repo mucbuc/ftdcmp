@@ -6,9 +6,6 @@
 #include <sstream>
 #include <string>
 
-#include <cassert>
-#define ASSERT(p) assert((p))
-
 #include <path_comp/src/interface.hpp>
 
 namespace ftdcmp {
