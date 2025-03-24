@@ -141,6 +141,10 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                 PathInfo<T> result { T(slot->advance.x), T(slot->advance.y) };
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
+                for (auto& loop : result.m_path.loops()) {
+                    loop.close();
+                }
+
                 if (result.m_current) {
                     result.m_path.insert(*result.m_current);
                     result.m_current.reset();
