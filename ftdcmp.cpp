@@ -91,25 +91,36 @@ struct PathInfo {
     }
 };
 
+struct FT_Face_Handle {
+    ~FT_Face_Handle()
+    {
+        FT_Done_Face(m_face);
+    }
+
+    FT_Face m_face;
+};
+
 template <typename T>
 std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file, unsigned font_index)
 {
     if (gStates.m_initialized) {
-        FT_Face face;
-        FT_Error error = FT_New_Face(gStates.m_library, font_file.c_str(), font_index, &face);
+
+        auto face_owner_outside = std::make_shared<FT_Face_Handle>();
+
+        FT_Error error = FT_New_Face(gStates.m_library, font_file.c_str(), font_index, &face_owner_outside->m_face);
 
         if (!error) {
 
-            return [face](auto symbol) {
-                const int glyph_index = FT_Get_Char_Index(face, symbol);
+            return [face_owner = face_owner_outside](auto symbol) {
+                const int glyph_index = FT_Get_Char_Index(face_owner->m_face, symbol);
 
-                FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
+                FT_Error error = FT_Load_Glyph(face_owner->m_face, glyph_index, FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
                 if (error) {
                     std::cerr << "[ftdcmp] failed to load glyph for symbol: " << symbol << " error:" << error << std::endl;
                     return path_type<T>();
                 }
 
-                FT_GlyphSlot slot = face->glyph;
+                FT_GlyphSlot slot = face_owner->m_face->glyph;
 
                 FT_Outline& outline = slot->outline;
 
