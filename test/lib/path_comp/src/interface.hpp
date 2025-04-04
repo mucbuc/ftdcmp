@@ -29,6 +29,9 @@ struct Loop {
     std::vector<index_type>& segments();
     std::vector<index_type> segments() const;
 
+    vector_type max() const; 
+    vector_type min() const; 
+
     template <typename C>
     Loop<C, Index_t> convert_to() const;
 
@@ -36,10 +39,14 @@ private:
     template <typename C, typename I>
     friend struct Loop;
 
-    Loop() = default;
+    Loop() = delete;
+
+    void track_extremes(vector_type);
 
     std::vector<vector_type> m_points;
     std::vector<index_type> m_segments;
+    vector_type m_max;
+    vector_type m_min;
 };
 
 template <typename Vector_t, typename Index_t>
