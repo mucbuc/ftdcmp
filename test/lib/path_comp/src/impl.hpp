@@ -5,7 +5,10 @@ template <typename Vector_t, typename Index_t>
 Loop<Vector_t, Index_t>::Loop(vector_type begin)
     : m_points(1, begin)
     , m_segments()
+    , m_max( begin )
+    , m_min( begin )
 {
+    track_extremes(begin);
 }
 
 template <typename Vector_t, typename Index_t>
@@ -13,6 +16,8 @@ auto Loop<Vector_t, Index_t>::line(vector_type dest) -> Loop&
 {
     m_points.push_back(dest);
     m_segments.push_back(1);
+
+    track_extremes(dest);
     return *this;
 }
 
@@ -22,6 +27,8 @@ auto Loop<Vector_t, Index_t>::curve(vector_type control, vector_type dest) -> Lo
     m_points.push_back(control);
     m_points.push_back(dest);
     m_segments.push_back(2);
+    
+    track_extremes(dest);
     return *this;
 }
 
@@ -32,6 +39,8 @@ auto Loop<Vector_t, Index_t>::curve(vector_type control1, vector_type control2, 
     m_points.push_back(control2);
     m_points.push_back(dest);
     m_segments.push_back(3);
+    
+    track_extremes(dest);
     return *this;
 }
 
@@ -71,6 +80,18 @@ auto Loop<Vector_t, Index_t>::segments() const -> std::vector<index_type>
 }
 
 template <typename Vector_t, typename Index_t>
+auto Loop<Vector_t, Index_t>::max() const -> vector_type
+{
+    return m_max;
+} 
+
+template <typename Vector_t, typename Index_t>
+auto Loop<Vector_t, Index_t>::min() const -> vector_type
+{
+    return m_min;
+} 
+
+template <typename Vector_t, typename Index_t>
 template <typename C>
 Loop<C, Index_t> Loop<Vector_t, Index_t>::convert_to() const
 {
@@ -87,6 +108,13 @@ Loop<C, Index_t> Loop<Vector_t, Index_t>::convert_to() const
     }
 
     return result;
+}
+
+template <typename Vector_t, typename Index_t>
+void Loop<Vector_t, Index_t>::track_extremes(vector_type d)
+{
+    m_max = vector_type {{ std::max(d[0], m_max[0]), std::max(d[1], m_max[1]) }};
+    m_min = vector_type {{ std::min(d[0], m_min[0]), std::min(d[1], m_min[1]) }};
 }
 
 #pragma mark Comp
