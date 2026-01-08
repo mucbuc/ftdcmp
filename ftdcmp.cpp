@@ -135,7 +135,14 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                     return path_type<T>();
                 }
 
+                PathInfo<T> result { T(slot->advance.x), T(slot->advance.y) };
                 if (outline.n_contours <= 0 || outline.n_points <= 0) {
+                
+                    if (slot->advance.x || slot->advance.y) {
+                        std::cout << "[ftdcmp] glyph without contour or points: " << result.m_path.size()[0] << ", " << result.m_path.size()[1] << std::endl;
+                        return result.m_path;
+                    }
+
                     std::cerr << "[ftdcmp] glyph missing path data for symbol: " << symbol << std::endl;
                     return path_type<T>();
                 }
@@ -148,8 +155,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                     0, // no shift
                     0 // no delta
                 };
-
-                PathInfo<T> result { T(slot->advance.x), T(slot->advance.y) };
+                
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 for (auto& loop : result.m_path.loops()) {
