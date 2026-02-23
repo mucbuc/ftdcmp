@@ -93,13 +93,13 @@ struct PathInfo {
 
 struct FT_Face_Handle {
     FT_Face_Handle() = delete;
-    FT_Face_Handle(const FT_Face_Handle &) = delete;
-    
+    FT_Face_Handle(const FT_Face_Handle&) = delete;
+
     FT_Face_Handle(auto font_lib, auto font_file, unsigned font_index)
     {
-        FT_Error m_error = FT_New_Face(font_lib, font_file.c_str(), font_index, & m_face);
+        FT_Error m_error = FT_New_Face(font_lib, font_file.c_str(), font_index, &m_face);
 
-        ASSERT(!m_error); 
+        ASSERT(!m_error);
 
         FT_Error e = FT_Reference_Face(m_face);
         ASSERT(!e);
@@ -121,7 +121,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
     if (gStates.m_initialized) {
 
         auto face_owner = std::make_shared<FT_Face_Handle>(gStates.m_library, font_file, font_index);
-    
+
         if (!face_owner->m_error) {
 
             return [face_owner](auto symbol) {
@@ -150,7 +150,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
 
                 PathInfo<T> result { T(slot->advance.x), T(slot->advance.y) };
                 if (outline.n_contours <= 0 || outline.n_points <= 0) {
-                
+
                     if (slot->advance.x || slot->advance.y) {
                         std::cout << "[ftdcmp] glyph without contour or points: " << result.m_path.size()[0] << ", " << result.m_path.size()[1] << std::endl;
                         return result.m_path;
@@ -168,7 +168,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                     0, // no shift
                     0 // no delta
                 };
-                
+
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 for (auto& loop : result.m_path.loops()) {
