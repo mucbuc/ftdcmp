@@ -1,0 +1,3 @@
+Remote: https://github.com/emscripten-ports/FreeType.git
+Commit: 3bd432842e2fed4a523bbf1126d4f2041bc33c56
+Branch: master
