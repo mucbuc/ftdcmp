@@ -21,7 +21,7 @@ int main()
 
         std::cout << path_comp::make_html_path(dcmp('B'), "container2") << std::endl;
     }
-    
+
     ftdcmp::release();
 
     return 0;
