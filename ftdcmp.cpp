@@ -92,12 +92,27 @@ struct PathInfo {
 };
 
 struct FT_Face_Handle {
+    FT_Face_Handle() = delete;
+    FT_Face_Handle(const FT_Face_Handle &) = delete;
+    
+    FT_Face_Handle(auto font_lib, auto font_file, unsigned font_index)
+    {
+        FT_Error m_error = FT_New_Face(font_lib, font_file.c_str(), font_index, & m_face);
+
+        ASSERT(!m_error); 
+
+        FT_Error e = FT_Reference_Face(m_face);
+        ASSERT(!e);
+    }
+
     ~FT_Face_Handle()
     {
-        FT_Done_Face(m_face);
+        FT_Error e = FT_Done_Face(m_face);
+        ASSERT(!e);
     }
 
     FT_Face m_face;
+    FT_Error m_error;
 };
 
 template <typename T>
@@ -105,13 +120,11 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
 {
     if (gStates.m_initialized) {
 
-        auto face_owner_outside = std::make_shared<FT_Face_Handle>();
+        auto face_owner = std::make_shared<FT_Face_Handle>(gStates.m_library, font_file, font_index);
+    
+        if (!face_owner->m_error) {
 
-        FT_Error error = FT_New_Face(gStates.m_library, font_file.c_str(), font_index, &face_owner_outside->m_face);
-
-        if (!error) {
-
-            return [face_owner = face_owner_outside](auto symbol) {
+            return [face_owner](auto symbol) {
                 const int glyph_index = FT_Get_Char_Index(face_owner->m_face, symbol);
 
                 FT_Error error = FT_Load_Glyph(face_owner->m_face, glyph_index, FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
@@ -170,7 +183,7 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
                 return result.m_path;
             };
         } else {
-            std::cerr << "[ftdcmp] failed to load font. error: " << error << " path: " << font_file << std::endl;
+            std::cerr << "[ftdcmp] failed to load font. error: " << face_owner->m_error << " path: " << font_file << std::endl;
         }
     }
     return [](auto symbol) {
