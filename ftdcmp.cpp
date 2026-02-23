@@ -123,7 +123,6 @@ std::function<path_type<T>(unsigned long)> make_decomposer(std::string font_file
         auto face_owner = std::make_shared<FT_Face_Handle>(gStates.m_library, font_file, font_index);
 
         if (!face_owner->m_error) {
-
             return [face_owner](auto symbol) {
                 const int glyph_index = FT_Get_Char_Index(face_owner->m_face, symbol);
 
