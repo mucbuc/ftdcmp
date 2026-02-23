@@ -7,11 +7,11 @@ int main()
 {
     ftdcmp::init();
     {
-    #ifdef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__
         auto dcmp = ftdcmp::make_decomposer_l("ArialUnicode.ttf");
-    #else
+#else
         auto dcmp = ftdcmp::make_decomposer_l("/Library/Fonts/Arial Unicode.ttf");
-    #endif
+#endif
 
         const auto a = dcmp('a');
         std::cout << path_comp::make_html_path(a, "container") << std::endl;
@@ -21,7 +21,7 @@ int main()
 
         std::cout << path_comp::make_html_path(dcmp('B'), "container2") << std::endl;
     }
-    
+
     ftdcmp::release();
 
     return 0;
