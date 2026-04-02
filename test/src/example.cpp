@@ -8,9 +8,9 @@ int main()
     ftdcmp::init();
     {
 #ifdef __EMSCRIPTEN__
-        auto dcmp = ftdcmp::make_decomposer_l("ArialUnicode.ttf");
+        auto dcmp = ftdcmp::make_decomposer_f("ArialUnicode.ttf");
 #else
-        auto dcmp = ftdcmp::make_decomposer_l("/Library/Fonts/Arial Unicode.ttf");
+        auto dcmp = ftdcmp::make_decomposer_f("/Library/Fonts/Arial Unicode.ttf");
 #endif
 
         const auto a = dcmp('a');
