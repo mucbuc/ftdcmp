@@ -13,9 +13,11 @@ set_target_properties(ftdcmp PROPERTIES
 	COMPILE_WARNING_AS_ERROR ON
 )
 
-if (NOT EMSCRIPTEN)
-    add_subdirectory(lib/FreeType EXCLUDE_FROM_ALL)
-    target_link_libraries(ftdcmp PRIVATE freetype)
-endif()
 
-target_include_directories(ftdcmp SYSTEM PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lib/FreeType/include)
+if(PROJECT_IS_TOP_LEVEL) # or libs??? 
+	include_directories(PUBLIC SYSTEM test/lib/FreeType/include)
+    include_directories(PUBLIC SYSTEM test/lib)
+else()
+    include_directories(PUBLIC SYSTEM ../FreeType/include)
+	include_directories(PUBLIC SYSTEM ..)
+endif()
