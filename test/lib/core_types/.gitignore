@@ -1,0 +1,13 @@
+.DS_Store
+test/build
+test/web-build
+test/xc-build
+test/xcbuild
+demo/build
+demo/web-build
+demo/xc-build
+demo/public
+.cache/
+.envrc
+.ignore_git
+

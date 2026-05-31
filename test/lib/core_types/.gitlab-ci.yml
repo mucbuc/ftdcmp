@@ -1,0 +1,11 @@
+stages:
+  - test
+
+test:
+  stage: test
+  image: gcc:latest
+  before_script:
+    - apt-get update && apt-get install -y cmake
+  script:
+    - cd test
+    - ./build_and_run
