@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.27)
 project(Example)
 
 add_executable(Example src/example.cpp)
+target_include_directories(Example SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib)
 set_target_properties(Example PROPERTIES
     CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED ON
@@ -11,7 +12,7 @@ set_target_properties(Example PROPERTIES
 )
 
 add_subdirectory(lib/ftdcmp)
-target_include_directories(ftdcmp SYSTEM PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lib)
+target_include_directories(ftdcmp SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib)
 
 add_subdirectory(lib/path_comp)
 add_subdirectory(lib/asserter)
