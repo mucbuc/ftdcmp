@@ -23,7 +23,7 @@ if (EMSCRIPTEN)
     target_link_options(Example PRIVATE 
         -sUSE_FREETYPE=1
         -sALLOW_MEMORY_GROWTH
-        --preload-file /Library/Fonts/Arial\ Unicode.ttf@ArialUnicode.ttf
+        --preload-file "/Library/Fonts/Arial Unicode.ttf@ArialUnicode.ttf"
     )
 else()
   target_link_libraries(Example PRIVATE freetype)
