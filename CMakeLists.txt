@@ -13,5 +13,12 @@ set_target_properties(ftdcmp PROPERTIES
 	COMPILE_WARNING_AS_ERROR ON
 )
 
+if (EMSCRIPTEN)
+    target_link_options(ftdcmp PRIVATE 
+        -USE_FREETYPE=1
+    )
+else()
+    target_link_libraries(ftdcmp PRIVATE freetype)
+endif()
 
 

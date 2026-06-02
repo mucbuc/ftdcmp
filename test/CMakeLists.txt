@@ -20,16 +20,6 @@ add_subdirectory(lib/core_types)
 
 add_subdirectory(lib/freetype)
 
-if (EMSCRIPTEN)
-    set_target_properties(Example PROPERTIES SUFFIX ".html")
-    target_link_options(Example PRIVATE 
-        -USE_FREETYPE=1
-        -sALLOW_MEMORY_GROWTH
-        --preload-file /Library/Fonts/Arial\ Unicode.ttf@ArialUnicode.ttf
-    )
-else()
-  #  target_link_libraries(Example PRIVATE freetype)
-endif()
 target_link_libraries(Example PRIVATE ftdcmp freetype)
 
 #include_directories(PUBLIC SYSTEM ${CMAKE_CURRENT_LIST_DIR}/lib)
