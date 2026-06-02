@@ -27,6 +27,14 @@ struct Vec3 {
     }
 
     template <typename U>
+    explicit Vec3(U x, U y, U z)
+        : x(static_cast<T>(x))
+        , y(static_cast<T>(y))
+        , z(static_cast<T>(z))
+    {
+    }
+
+    template <typename U>
     explicit Vec3(const Vec3<U>& other)
         : x(static_cast<T>(other.x))
         , y(static_cast<T>(other.y))

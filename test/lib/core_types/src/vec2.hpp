@@ -24,6 +24,13 @@ struct Vec2 {
     }
 
     template <typename U>
+    explicit Vec2(U x, U y)
+        : x(static_cast<T>(x))
+        , y(static_cast<T>(y))
+    {
+    }
+
+    template <typename U>
     explicit Vec2(const Vec2<U>& other)
         : x(static_cast<T>(other.x))
         , y(static_cast<T>(other.y))

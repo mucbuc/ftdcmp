@@ -32,4 +32,4 @@ endif()
 
 target_link_libraries(Example PRIVATE ftdcmp freetype)
 
-include_directories(PUBLIC SYSTEM ${CMAKE_SOURCE_DIR}/lib)
+include_directories(PUBLIC SYSTEM ${CMAKE_CURRENT_LIST_DIR}/lib)

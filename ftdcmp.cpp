@@ -11,6 +11,8 @@
 #include FT_OUTLINE_H
 #include FT_BBOX_H
 
+using namespace ftdcmp;
+
 namespace {
 
 static struct
@@ -28,17 +30,14 @@ static struct
 template <typename T>
 struct PathInfo {
 
-    using vector_type = ftdcmp::vector_type;
-    using loop_type = path_comp::Loop<vector_type>;
-
     PathInfo(const T& w, const T& h)
         : m_current()
-        , m_path(vector_type{ w, h })
+        , m_path(vector_type { w, h })
     {
     }
 
     std::shared_ptr<loop_type> m_current;
-    path_comp::Comp<loop_type> m_path;
+    path_comp::Composition<loop_type> m_path;
 
     static int
     moveTo(const FT_Vector* to,
@@ -51,7 +50,7 @@ struct PathInfo {
             path->m_path.insert(*path->m_current);
         }
 
-        path->m_current = std::make_shared<loop_type>(vector_type { { T(to->x), T(to->y) } });
+        path->m_current = std::make_shared<loop_type>(vector_type(to->x, to->y));
         return 0;
     }
 
@@ -62,7 +61,7 @@ struct PathInfo {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
         ASSERT(path->m_current.get());
 
-        path->m_current->line(vector_type { { T(to->x), T(to->y) } });
+        path->m_current->line(vector_type(to->x, to->y));
         return 0;
     }
 
@@ -73,7 +72,7 @@ struct PathInfo {
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
         ASSERT(path->m_current.get());
-        path->m_current->curve(vector_type { { T(control->x), T(control->y) } }, vector_type { { T(to->x), T(to->y) } });
+        path->m_current->curve(vector_type(control->x, control->y), vector_type(to->x, to->y));
         return 0;
     }
 
@@ -85,7 +84,7 @@ struct PathInfo {
     {
         PathInfo* path = reinterpret_cast<PathInfo*>(user);
         ASSERT(path->m_current.get());
-        path->m_current->curve(vector_type { { T(control1->x), T(control1->y) } }, vector_type { { T(control2->x), T(control2->y) } }, vector_type { { T(to->x), T(to->y) } });
+        path->m_current->curve(vector_type(control1->x, control1->y), vector_type(control2->x, control2->y), vector_type(to->x, to->y));
         return 0;
     }
 };
@@ -135,11 +134,11 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                     return path_type();
                 }
 
-                auto result = PathInfo<ftdcmp::float32_t>{ ftdcmp::float32_t(slot->advance.x), ftdcmp::float32_t(slot->advance.y) };
+                auto result = PathInfo<ftdcmp::float32_t> { ftdcmp::float32_t(slot->advance.x), ftdcmp::float32_t(slot->advance.y) };
                 if (outline.n_contours <= 0 || outline.n_points <= 0) {
-                
+
                     if (slot->advance.x || slot->advance.y) {
-                        std::cout << "[ftdcmp] glyph without contour or points: " << result.m_path.size()[0] << ", " << result.m_path.size()[1] << std::endl;
+                        std::cout << "[ftdcmp] glyph without contour or points: " << result.m_path.bounds_end_points() << std::endl;
                         return result.m_path;
                     }
 
@@ -155,11 +154,11 @@ std::function<path_type(unsigned long)> make_decomposer(std::string font_file, u
                     0, // no shift
                     0 // no delta
                 };
-                
+
                 FT_Outline_Decompose(&outline, &outlineFuncs, &result);
 
                 for (auto& loop : result.m_path.loops()) {
-                    loop.close();
+                    const_cast<loop_type&>(loop).close();
                 }
 
                 if (result.m_current) {
@@ -202,23 +201,23 @@ void release()
     }
 }
 
-#pragma mark --
+#pragma mark--
 
-struct Font_Batch_Loader::Pimpl
-{
+struct Font_Batch_Loader::Pimpl {
     Pimpl(std::string font_path, unsigned font_index)
-    : m_decomposer(make_decomposer_f(font_path, font_index))
-    , m_points()
-    , m_segments()
-    , m_loops()
-    , m_glyphs()
-    {}
+        : m_decomposer(make_decomposer_f(font_path, font_index))
+        , m_points()
+        , m_segments()
+        , m_loops()
+        , m_glyphs()
+        , m_glyph_map()
+    {
+    }
 
     int get_glyph_shader_index(unsigned long g)
     {
         const auto pos = m_glyph_map.find(g);
-        if (pos != m_glyph_map.end())
-        {
+        if (pos != m_glyph_map.end()) {
             return pos->second;
         }
         return -1;
@@ -227,25 +226,25 @@ struct Font_Batch_Loader::Pimpl
     void load_glyph(unsigned long g)
     {
         auto glyph = m_decomposer(g);
-
-        for (auto loop : glyph.loops())
-        {
+#ifdef V2
+        for (auto loop : glyph.loops()) {
             std::cout << "insert loop at segment index " << m_segments.size() << std::endl;
 
             if (!m_points.empty()) {
-                std::for_each(loop.segments().begin(), loop.segments().end(), [this](auto & s) {
+                std::for_each(loop.segments().begin(), loop.segments().end(), [this](auto& s) {
                     s += m_points.size();
                 });
             }
-            
-            m_segments.insert( m_segments.end(), loop.segments().begin(), loop.segments().end() );
-            m_points.insert( m_points.end(), loop.points().begin(), loop.points().end() );
-            m_loops.push_back( unsigned(m_segments.size()) );
+
+            m_segments.insert(m_segments.end(), loop.segments().begin(), loop.segments().end());
+            m_points.insert(m_points.end(), loop.points().begin(), loop.points().end());
+            m_loops.push_back(unsigned(m_segments.size()));
         }
         m_glyph_map[g] = unsigned(m_glyphs.size());
         m_glyphs.push_back(unsigned(m_loops.size()));
-    
+
         std::cout << "insert glyph " << g << " at loop index " << m_loops.size() << std::endl;
+#endif
     }
 
     std::vector<vector_type> points() const
@@ -277,8 +276,9 @@ struct Font_Batch_Loader::Pimpl
 };
 
 Font_Batch_Loader::Font_Batch_Loader(std::shared_ptr<Pimpl> p)
-: m_pimpl(p)
-{}
+    : m_pimpl(p)
+{
+}
 
 void Font_Batch_Loader::load_glyph(unsigned long glyph)
 {
@@ -329,7 +329,7 @@ std::vector<uint32_t> Font_Batch_Loader::glyphs() const
     return m_pimpl->glyphs();
 }
 
-#pragma mark -- 
+#pragma mark--
 
 // std::function<path_type<long>(unsigned long)> make_decomposer_l(std::string font_file, unsigned font_index)
 // {

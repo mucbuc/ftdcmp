@@ -1,3 +1,3 @@
 Remote: git@gitlab.com:mucbuc/core_types.git
-Commit: 0259b3a2858d6a27d5af815e04f0ca38b6a1dad8
+Commit: b63a7632eab71f27efaa132ad6095b7ad6045f1d
 Branch: master

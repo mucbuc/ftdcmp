@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <asserter/src/asserter.hpp>
+#include <path_comp/src/make_html_path.hpp>
 
 int main()
 {
@@ -16,8 +17,7 @@ int main()
         const auto a = dcmp('a');
         std::cout << path_comp::make_html_path(a, "container") << std::endl;
 
-        std::cout << a.loops()[0].max()[0] << " " << a.loops()[0].max()[1] << std::endl;
-        std::cout << a.loops()[0].min()[0] << " " << a.loops()[0].min()[1] << std::endl;
+        std::cout << a.bounds_end_points() << std::endl;
 
         std::cout << path_comp::make_html_path(dcmp('B'), "container2") << std::endl;
     }

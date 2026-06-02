@@ -20,6 +20,9 @@ struct Composition {
     using index_type = typename loop_type::index_type;
     using rect_type = typename loop_type::rect_type;
 
+    Composition() = default;
+    Composition(const vector_type& advance);
+
     Composition& insert(const loop_type& l);
 
     std::span<const loop_type> loops() const;
@@ -29,6 +32,8 @@ struct Composition {
 
     rect_type bounds_control_points() const;
     rect_type bounds_end_points() const;
+    const vector_type& advance() const;
+    vector_type& advance();
 
 private:
     template <typename T>
@@ -37,6 +42,7 @@ private:
     std::vector<loop_type> m_loops;
     rect_type m_bounds_end_points;
     rect_type m_bounds_all;
+    vector_type m_advance;
 };
 
 } // path_comp

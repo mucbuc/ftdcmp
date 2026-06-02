@@ -1,6 +1,15 @@
 namespace path_comp {
 
 template <typename Loop_t>
+Composition<Loop_t>::Composition(const vector_type& advance)
+    : m_loops()
+    , m_bounds_end_points()
+    , m_bounds_all()
+    , m_advance(advance)
+{
+}
+
+template <typename Loop_t>
 Composition<Loop_t>& Composition<Loop_t>::insert(const loop_type& l)
 {
     m_loops.push_back(l);
@@ -19,6 +28,18 @@ template <typename Loop_t>
 auto Composition<Loop_t>::bounds_end_points() const -> rect_type
 {
     return m_bounds_end_points;
+}
+
+template <typename Loop_t>
+auto Composition<Loop_t>::advance() const -> const vector_type&
+{
+    return m_advance;
+}
+
+template <typename Loop_t>
+auto Composition<Loop_t>::advance() -> vector_type&
+{
+    return m_advance;
 }
 
 template <typename Loop_t>
