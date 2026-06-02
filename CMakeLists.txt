@@ -14,10 +14,4 @@ set_target_properties(ftdcmp PROPERTIES
 )
 
 
-if(PROJECT_IS_TOP_LEVEL) # or libs??? 
-	include_directories(PUBLIC SYSTEM test/lib/FreeType/include)
-  include_directories(PUBLIC SYSTEM test/lib)
-else()
-  include_directories(PUBLIC SYSTEM ../FreeType/include)
-	include_directories(PUBLIC SYSTEM ..)
-endif()
+
