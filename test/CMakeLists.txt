@@ -25,6 +25,8 @@ if (EMSCRIPTEN)
         -sALLOW_MEMORY_GROWTH
         --preload-file /Library/Fonts/Arial\ Unicode.ttf@ArialUnicode.ttf
     )
+else()
+  target_link_libraries(Example PRIVATE freetype)
 endif()
 
 target_link_libraries(Example PRIVATE ftdcmp)

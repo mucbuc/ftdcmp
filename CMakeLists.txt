@@ -15,11 +15,6 @@ set_target_properties(ftdcmp PROPERTIES
 	COMPILE_WARNING_AS_ERROR ON
 )
 
-if (EMSCRIPTEN)
-  target_include_directories(ftdcmp SYSTEM PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lib/freetype/include)
-  #  target_link_options(ftdcmp PRIVATE -sUSE_FREETYPE=1)
-else()
-    target_link_libraries(ftdcmp PRIVATE freetype)
-endif()
+target_include_directories(ftdcmp SYSTEM PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lib/freetype/include)
 
 
