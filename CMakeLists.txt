@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.27)
 project(ftdcmp)
 
-if (NOT EMSCRIPTEN)
-    add_subdirectory(lib/freetype)
-endif()
-
 add_library(ftdcmp STATIC
     ftdcmp.cpp
     ftdcmp.hpp
@@ -17,6 +13,13 @@ set_target_properties(ftdcmp PROPERTIES
 	COMPILE_WARNING_AS_ERROR ON
 )
 
-target_include_directories(ftdcmp SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/freetype/include)
+if (EMSCRIPTEN)
+    target_include_directories(ftdcmp SYSTEM PRIVATE ${EMSCRIPTEN_SYSROOT}/include/freetype2)
+else()
+    add_subdirectory(lib/freetype)
+    target_include_directories(ftdcmp SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/freetype/include)
+endif()
+
+
 
 
