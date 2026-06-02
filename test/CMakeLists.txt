@@ -21,10 +21,11 @@ add_subdirectory(lib/core_types)
 if (EMSCRIPTEN)
     set_target_properties(Example PROPERTIES SUFFIX ".html")
     target_link_options(Example PRIVATE 
+        -sUSE_FREETYPE=1
         -sALLOW_MEMORY_GROWTH
         --preload-file /Library/Fonts/Arial\ Unicode.ttf@ArialUnicode.ttf
     )
 endif()
 
-target_link_libraries(Example PRIVATE ftdcmp freetype)
+target_link_libraries(Example PRIVATE ftdcmp)
 
